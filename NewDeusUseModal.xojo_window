@@ -357,7 +357,7 @@ Begin DesktopWindow NewDeusUseModal
       TabIndex        =   8
       TabPanelIndex   =   0
       TabStop         =   True
-      Text            =   ""
+      Text            =   "65"
       TextAlignment   =   2
       TextColor       =   &c00000000
       Tooltip         =   ""
@@ -432,7 +432,7 @@ Begin DesktopWindow NewDeusUseModal
       TabIndex        =   10
       TabPanelIndex   =   0
       TabStop         =   True
-      Text            =   ""
+      Text            =   "A2"
       TextAlignment   =   2
       TextColor       =   &c00000000
       Tooltip         =   ""
@@ -700,7 +700,8 @@ End
 	#tag Method, Flags = &h0
 		Function CreateNewDeusUseRecord() As boolean
 		  dim rec as DatabaseRow
-		  dim n as integer
+		  dim i,n,remainingdrops,ser as integer
+		  dim currentdeus as DeusClass
 		  
 		  rec = new DatabaseRow
 		  rec.Column("date") = TextField1.text
@@ -710,11 +711,37 @@ End
 		  rec.column("height") = TextField5.text
 		  rec.Column("location") = TextField6.text
 		  rec.column("notes") = TextArea1.text
-		  n = val(TextField3.text) + val(TextField4.text)
-		  rec.Column("absorbedjoules") = str(n * 85 * 23* 10)
+		  n = val(TextField3.text) + val(TextField4.text) 'total drops on this event
+		  rec.Column("joulesabsorbed") = str(n * 85 * 20* 10) '200 lbs x 65 ft x gravity
 		  
 		  Try
 		    mysqldb.AddRow("deususe",rec)
+		    ser = mysqldb.lastinsertedrowid
+		    '----- Get total joules since last certification and subtract from 200 M then divide by 17000
+		    n = window1.CalculateJoulesSinceLastCertification("1000")
+		    if n <> 0 then
+		      '----- Get the deus defaults
+		      if ubound(deuslist) >= 0 then
+		        for i = 0 to ubound(deuslist)
+		          if deuslist(i).serial = "1000" then
+		            currentdeus = deuslist(i)
+		            exit
+		          end if
+		        next
+		      end if
+		      '-----
+		      remainingdrops = (200000000 - n)/(currentdeus.defaultweight * currentdeus.defaultdrop * 10)
+		      if remainingdrops <> 0 then
+		        Try
+		          mysqldb.ExecuteSQL("UPDATE deususe SET dropsremaining = '" + str(remainingdrops) + "' where serial = '" + str(ser)+ "'")
+		          'add this to the listbox info
+		          
+		        catch err as DatabaseException
+		          
+		        end try
+		      end if
+		    end if
+		    '-----
 		    return true
 		  catch err as DatabaseException
 		    

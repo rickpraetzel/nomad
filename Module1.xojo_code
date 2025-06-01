@@ -1,5 +1,34 @@
 #tag Module
 Protected Module Module1
+	#tag Method, Flags = &h0
+		Sub LoadDeusDefaultConstants()
+		  dim sqlstring as string
+		  dim rs as rowset
+		  dim givendeus as deusclass
+		  
+		  sqlstring = "SELECT * from deussettings"
+		  
+		  TRY
+		    rs = MySQLdb.SelectSQL(sqlstring)
+		    if rs <> nil then
+		      if not rs.afterlastrow then
+		        while not rs.AfterLastRow
+		          givendeus = new DeusClass
+		          givendeus.serial = rs.Column("deusserial").StringValue
+		          givendeus.defaultdrop = rs.Column("deusdefaultdrop").IntegerValue
+		          givendeus.defaultweight = rs.Column("deusdefaultweight").IntegerValue
+		          deuslist.append givendeus
+		          rs.MoveToNextRow
+		        wend
+		      end if
+		    end if
+		  CATCH err as DatabaseException
+		    MessageBox "Failed to load deus settings."
+		  END TRY
+		End Sub
+	#tag EndMethod
+
+
 	#tag Property, Flags = &h0
 		dbhost As string
 	#tag EndProperty
@@ -26,6 +55,10 @@ Protected Module Module1
 
 	#tag Property, Flags = &h0
 		dbusername As string
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		deuslist() As deusclass
 	#tag EndProperty
 
 	#tag Property, Flags = &h0

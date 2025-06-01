@@ -14,6 +14,7 @@ Module=Module1;Module1.xojo_code;&h0000000065F987FF;&h0000000000000000;false
 Class=DBTextfieldClass;DBTextfieldClass.xojo_code;&h0000000055415FFF;&h0000000000000000;false
 Class=DBTextAreaClass;DBTextAreaClass.xojo_code;&h000000002DF007FF;&h0000000000000000;false
 Class=iCalMiniCalendar;iCalMiniCalendar.xojo_code;&hFFFFFFFFB8CE2621;&h0000000000000000;false
+Class=DeusClass;DeusClass.xojo_code;&h000000003419A7FF;&h0000000000000000;false
 DefaultWindow=Window1
 AppMenuBar=MainMenuBar
 MajorVersion=1

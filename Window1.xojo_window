@@ -64,8 +64,8 @@ Begin DesktopWindow Window1
          AllowRowDragging=   False
          AllowRowReordering=   False
          Bold            =   False
-         ColumnCount     =   5
-         ColumnWidths    =   "100,200,75,75,*"
+         ColumnCount     =   7
+         ColumnWidths    =   "100,50,200,75,75,100,*"
          DefaultRowHeight=   20
          DropIndicatorVisible=   False
          Enabled         =   True
@@ -81,7 +81,7 @@ Begin DesktopWindow Window1
          Height          =   327
          Index           =   -2147483648
          InitialParent   =   "TabPanel1"
-         InitialValue    =   "Date	Org	Drop Count	Staff	Notes"
+         InitialValue    =   "Date	Serial	Org	Drop Count	Staff	Remain Drops	Notes"
          Italic          =   False
          Left            =   0
          LockBottom      =   True
@@ -283,6 +283,38 @@ Begin DesktopWindow Window1
       Visible         =   True
       Width           =   110
    End
+   Begin DesktopLabel Label1
+      AllowAutoDeactivate=   True
+      Bold            =   False
+      Enabled         =   True
+      FontName        =   "System"
+      FontSize        =   11.0
+      FontUnit        =   0
+      Height          =   20
+      Index           =   -2147483648
+      Italic          =   False
+      Left            =   10
+      LockBottom      =   False
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   False
+      LockTop         =   True
+      Multiline       =   False
+      Scope           =   0
+      Selectable      =   False
+      TabIndex        =   2
+      TabPanelIndex   =   0
+      TabStop         =   True
+      Text            =   "The brake pads in the DEUS 7300 are designed to absorb 200 million joules of energy. Inspection interval is every 15 million joules."
+      TextAlignment   =   0
+      TextColor       =   &c000000
+      Tooltip         =   ""
+      Top             =   371
+      Transparent     =   False
+      Underline       =   False
+      Visible         =   True
+      Width           =   687
+   End
 End
 #tag EndDesktopWindow
 
@@ -296,6 +328,7 @@ End
 	#tag Event
 		Sub Opening()
 		  if Createdatabase then
+		    LoadDeusDefaultConstants
 		    if tabpanel1.SelectedPanelIndex = 0 then
 		      LoadDeusUse
 		    elseif tabpanel1.SelectedPanelIndex = 1 then
@@ -321,7 +354,8 @@ End
 		  dim rs as rowset
 		  dim n as integer
 		  
-		  sqlstring = "SELECT SUM(dropcount + staff) from deususe where date > (select datelastcertified from deusunits where serial = '" + deusserial + "') AND deusserial = '" + deusserial + "'"
+		  'sqlstring = "SELECT (SUM(dropcount + staff) * height/3 * 85 * 10) from deususe where date > (select datelastcertified from deusunits where serial = '" + deusserial + "') AND deusserial = '" + deusserial + "'"
+		  sqlstring = "SELECT SUM(joulesabsorbed) from deususe where date > (select datelastcertified from deusunits where serial = '" + deusserial + "') AND deusserial = '" + deusserial + "'"
 		  
 		  Try
 		    rs = mysqldb.SelectSQL(sqlstring)
@@ -329,7 +363,7 @@ End
 		      if not rs.AfterLastRow then
 		        n = rs.ColumnAt(0).IntegerValue
 		        if n <> 0 then
-		          n = n*85*23*10
+		          'n = n*85*20*10
 		          'store this calculation
 		          Try
 		            mysqldb.ExecuteSQL("UPDATE deusunits SET joulessincelastcert = " + str(n) + " WHERE serial = '" + deusserial + "'")
@@ -412,7 +446,7 @@ End
 		  else
 		    mysqldb.DatabaseName = dbtestname
 		    operations = app.kTestMode
-		    
+		    me.Title = me.Title  + " (TEST MODE)"
 		  end if
 		  
 		  try
@@ -509,7 +543,7 @@ End
 		    if rs <> nil then
 		      if not rs.AfterLastRow then
 		        while not rs.AfterLastRow
-		          listbox1.addrow rs.columnat(1).StringValue,rs.columnat(2).StringValue,rs.columnat(3).StringValue,rs.columnat(4).StringValue,rs.columnat(7).StringValue
+		          listbox1.addrow rs.columnat(1).StringValue,rs.columnat(8).StringValue,rs.columnat(2).StringValue,rs.columnat(3).StringValue,rs.columnat(4).StringValue,format(rs.columnat(10).Value,"###,##0"),rs.columnat(7).StringValue
 		          listbox1.CellTagAt(listbox1.rowcount - 1,0) = rs.ColumnAt(0).StringValue 'this loads the record serial in the first column celltag
 		          rs.MoveToNextRow
 		        wend
@@ -609,8 +643,10 @@ End
 	#tag Event
 		Sub Opening()
 		  me.ColumnAlignmentAt(0) = desktoplistbox.Alignments.Center
-		  me.ColumnAlignmentAt(2) = desktoplistbox.Alignments.Center
+		  me.ColumnAlignmentAt(1) = desktoplistbox.Alignments.Center
 		  me.ColumnAlignmentAt(3) = desktoplistbox.Alignments.Center
+		  me.ColumnAlignmentAt(4) = desktoplistbox.Alignments.Center
+		  me.ColumnAlignmentat(5) = DesktopListBox.Alignments.Center
 		End Sub
 	#tag EndEvent
 	#tag Event
@@ -716,6 +752,11 @@ End
 		    end if
 		  end if
 		End Function
+	#tag EndEvent
+	#tag Event
+		Sub Opening()
+		  
+		End Sub
 	#tag EndEvent
 #tag EndEvents
 #tag Events Button1
